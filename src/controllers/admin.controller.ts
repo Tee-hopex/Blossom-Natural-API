@@ -119,7 +119,7 @@ export async function getSettings(
   try {
     let settings = await SiteSettings.findOne().lean();
     if (!settings) {
-      settings = await SiteSettings.create({
+      const created = await SiteSettings.create({
         bankName: process.env.BANK_NAME ?? '',
         bankAccountName: process.env.BANK_ACCOUNT_NAME ?? '',
         bankAccountNumber: process.env.BANK_ACCOUNT_NUMBER ?? '',
@@ -127,6 +127,7 @@ export async function getSettings(
         deliveryFee: 1500,
         freeDeliveryThreshold: 15000,
       });
+      settings = created as any;
     }
     res.json({ success: true, data: settings });
   } catch (error) {
