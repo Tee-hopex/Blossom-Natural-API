@@ -3,6 +3,10 @@ import { Product } from '../models';
 import { createProductSchema, updateProductSchema } from '../validators/product.validator';
 import { ProductQueryParams } from '../types';
 
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 // GET /api/products
 export async function getProducts(
   req: Request<object, object, object, ProductQueryParams>,
@@ -41,8 +45,17 @@ export async function getProducts(
       if (maxPrice) (filter.price as Record<string, number>).$lte = parseFloat(maxPrice);
     }
 
-    if (search) {
-      filter.$text = { $search: search };
+    const normalizedSearch = typeof search === 'string' ? search.trim() : '';
+    if (normalizedSearch) {
+      const searchRegex = new RegExp(escapeRegex(normalizedSearch), 'i');
+      filter.$or = [
+        { name: searchRegex },
+        { description: searchRegex },
+        { benefits: searchRegex },
+        { ingredients: searchRegex },
+        { suitableFor: searchRegex },
+        { usage: searchRegex },
+      ];
     }
 
     // Sort map
