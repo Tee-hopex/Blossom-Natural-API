@@ -8,6 +8,10 @@ export interface IProduct {
   description: string;
   benefits: string[];
   ingredients: string[];
+  suitableFor?: string[];
+  freeFrom?: string[];
+  warning?: string;
+  faqs?: { question: string; answer: string }[];
   usage?: string;
   images: string[];
   stock: number;
@@ -38,6 +42,15 @@ const productSchema = new Schema<IProductDocument>(
     description: { type: String, required: true },
     benefits: [{ type: String }],
     ingredients: [{ type: String }],
+    suitableFor: [{ type: String }],
+    freeFrom: [{ type: String }],
+    warning: { type: String },
+    faqs: [
+      {
+        question: { type: String },
+        answer: { type: String },
+      },
+    ],
     usage: { type: String },
     images: [{ type: String }],
     stock: { type: Number, default: 0, min: 0 },
