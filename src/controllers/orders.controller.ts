@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import { Order, Product } from '../models';
+import { SiteSettings } from '../models/SiteSettings.model';
 import { createOrderSchema } from '../validators/order.validator';
 
 // Generate a unique, human-readable order number
@@ -106,6 +107,8 @@ export async function placeOrder(
 
     await session.commitTransaction();
 
+    const siteSettings = await SiteSettings.findOne().lean();
+
     res.status(201).json({
       success: true,
       data: {
@@ -114,11 +117,10 @@ export async function placeOrder(
         deliveryFee: order.deliveryFee,
         subtotal: order.subtotal,
         status: order.status,
-        // Bank details for payment instructions (sourced from env)
         paymentInstructions: {
-          bankName: process.env.BANK_NAME,
-          accountName: process.env.BANK_ACCOUNT_NAME,
-          accountNumber: process.env.BANK_ACCOUNT_NUMBER,
+          bankName: siteSettings?.bankName ?? process.env.BANK_NAME,
+          accountName: siteSettings?.bankAccountName ?? process.env.BANK_ACCOUNT_NAME,
+          accountNumber: siteSettings?.bankAccountNumber ?? process.env.BANK_ACCOUNT_NUMBER,
           amount: order.total,
           reference: order.orderNumber,
         },
